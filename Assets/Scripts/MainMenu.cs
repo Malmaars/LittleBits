@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using Unity.VisualScripting;
+using static UnityEditor.Progress;
 
 public class MainMenu : MonoBehaviour
 {
@@ -18,16 +19,21 @@ public class MainMenu : MonoBehaviour
     [SerializeField]
     private GameObject _pointer;
     private RectTransform[] _option;
-    private int _idx = 0;
+    private RectTransform[][] _optionArr;
+
+
+    private int _currMenu = 0;
+    private int _currPointer = 0;
+
     private float _music = 1;
     private float _sound = 1;
 
     // Start is called before the first frame update
     void Start()
     {
-        _option = _menuOption;
-        _idx = 0;
-        MovePointer();
+        _optionArr = new RectTransform[][] { _menuOption, _optionOption, _creditOption };
+        _currMenu = 0;
+        ShowMenu(_currMenu);
 
     }
 
@@ -35,100 +41,93 @@ public class MainMenu : MonoBehaviour
     void Update()
     {
         Selecting();
-        if (Input.anyKeyDown)
+        if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
         {
-            if (Input.GetAxis("Vertical") > 0)
-            {
-                _idx--;
-            }
-            else if (Input.GetAxis("Vertical") < 0)
-            {
-                _idx++;
-            }
+            Hover(false);
+            _currPointer--;
+            _currPointer = (_currPointer + _option.Length) % _option.Length;
+            MovePointer();
         }
-        _idx = (_idx + _option.Length) % _option.Length;
-        MovePointer();
-
-
-
+        else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            Hover(false);
+            _currPointer++;
+            _currPointer = (_currPointer + _option.Length) % _option.Length;
+            MovePointer();
+        }
     }
-    void Selecting() {
 
- 
-            if (_containers[0].activeSelf)
+    void Selecting()
+    {
+            switch (_currMenu)
             {
-                if (Input.GetKeyDown(KeyCode.G))
-                {
+                case 0:
                     SelectingMainMenu();
-                }
-            }
-            else if (_containers[1].activeSelf)
-            {
-                SelectingOption();
-            }
-            else if (_containers[2].activeSelf)
-            {
-                if (Input.GetKeyDown(KeyCode.G))
-                {
+                    break;
+                case 1:
+                    SelectingOption();
+                    break;
+                case 2:
                     SelectingCredit();
-                }
+                    break;
+                default:
+                    break;
             }
-        
+
     }
     void SelectingMainMenu()
     {
-        switch (_idx)
+        if (Input.GetKeyDown(KeyCode.G))
         {
-            case 0:
-                //loadnewscene
-                break;
-            case 1:
-                _option = _optionOption;
-                _containers[0].SetActive(false);
-                _containers[1].SetActive(true);
-                _idx = 0;
-                break;
-            case 2:
-                _option = _creditOption;
-                _containers[0].SetActive(false);
-                _containers[2].SetActive(true);
-                _idx = 0;
-                break;
-            default:
-                break;
+            if (_currPointer == 0)
+            {
+                //load new scene
+            }
+            else
+            {
+                Hover(false);
+                _currMenu = _currPointer;
+                ShowMenu(_currMenu);
+            }
         }
-
     }
+
     void SelectingOption()
     {
         Image _fill;
-        switch (_idx)
+        switch (_currPointer)
         {
             case 0:
-                _fill = _optionOption[_idx].gameObject.GetComponent<Image>();
-
-                 _music = FillBar(_music, _fill);
-                Debug.Log(_fill.name);
-
+                _fill = GetFill();
+                _music = FillBar(_music, _fill);
                 break;
             case 1:
-                _fill = _optionOption[_idx].gameObject.GetComponent<Image>();
-                _sound = FillBar(_sound, _fill);
+                _fill = GetFill();
+                _sound = FillBar(_music, _fill);
                 break;
             case 2:
                 if (Input.GetKeyDown(KeyCode.G))
                 {
-                    _option = _menuOption;
-                    _containers[0].SetActive(true);
-                    _containers[1].SetActive(false);
-                    _idx = 1;
+                    Hover(false);
+
+                    _currMenu = 0;
+                    ShowMenu(_currMenu);
                 }
                 break;
             default:
                 break;
         }
+        
     }
-    float FillBar (float _bar , Image _fill)
+    Image GetFill()
+    {
+        Image fill = null;
+        RectTransform[] _button = _option[_currPointer].GetComponentsInChildren<RectTransform>(true);
+        fill = _button[1].gameObject.GetComponent<Image>();
+        return fill;
+    }
+
+    float FillBar(float _bar, Image _fill)
     {
 
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
@@ -137,31 +136,55 @@ public class MainMenu : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
         {
-             
-           _bar = Mathf.Min(_bar + 0.1f, 1f);
+
+            _bar = Mathf.Min(_bar + 0.1f, 1f);
 
 
         }
-        Debug.Log(_bar);
         _fill.fillAmount = _bar;
         return _bar;
     }
     void SelectingCredit()
     {
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            Hover(false);
 
-        _option = _menuOption;
-        _containers[0].SetActive(true);
-        _containers[2].SetActive(false);
-        _idx = 2;
-
+            _currMenu = 0;
+            ShowMenu(_currMenu);
+        }
     }
-    void MovePointer() {
-        float _yPos = _option[_idx].transform.position.y;
-        float _xPos = _option[_idx].sizeDelta.x;
+    void ShowMenu(int _currMenu)
+    {
+        foreach (var item in _containers)
+        {
+            item.SetActive(false);
+        }
+        _containers[_currMenu].SetActive(true);
+
+        _option = _optionArr[_currMenu];
+        _currPointer = 0;
+        MovePointer();
+    }
+
+    void MovePointer()
+    {
+        float _yPos = _option[_currPointer].transform.position.y;
+        float _xPos = _option[_currPointer].rect.width * 4;
         int _screenWidth = UnityEngine.Screen.width;
         Vector3 _pointerPos = _pointer.transform.position;
         _pointerPos.y = _yPos;
-        _pointerPos.x = _screenWidth / 2-_xPos/2-25;
+        _pointerPos.x = _screenWidth / 2 - _xPos / 2 - 40;
         _pointer.transform.position = _pointerPos;
+        Hover(true);
+    }
+    void Hover(bool _hovering)
+    {
+        uiHover _hover = _option[_currPointer].GetComponent<uiHover>();
+        if (_hover == null) { Debug.LogError("ui is null"); }
+        else
+        {
+            _hover.OnHover(_hovering);
+        }
     }
 }

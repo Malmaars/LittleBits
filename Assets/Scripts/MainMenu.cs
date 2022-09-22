@@ -21,7 +21,8 @@ public class MainMenu : MonoBehaviour
     private RectTransform[] _option;
     private RectTransform[][] _optionArr;
 
-
+    [SerializeField]
+    private AudioManager _audioManager;
     private int _currMenu = 0;
     private int _currPointer = 0;
 
@@ -43,6 +44,8 @@ public class MainMenu : MonoBehaviour
         Selecting();
         if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
         {
+            _audioManager.PlaySound(0);
+
             Hover(false);
             _currPointer--;
             _currPointer = (_currPointer + _option.Length) % _option.Length;
@@ -50,6 +53,8 @@ public class MainMenu : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
         {
+            _audioManager.PlaySound(0);
+
             Hover(false);
             _currPointer++;
             _currPointer = (_currPointer + _option.Length) % _option.Length;
@@ -79,6 +84,8 @@ public class MainMenu : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.G))
         {
+            _audioManager.PlaySound(1);
+
             if (_currPointer == 0)
             {
                 //load new scene
@@ -100,14 +107,18 @@ public class MainMenu : MonoBehaviour
             case 0:
                 _fill = GetFill();
                 _music = FillBar(_music, _fill);
+                _audioManager.BGMVolume(_music);
                 break;
             case 1:
                 _fill = GetFill();
-                _sound = FillBar(_music, _fill);
+                _sound = FillBar(_sound, _fill);
+                _audioManager.soundVolume(_sound);
+
                 break;
             case 2:
                 if (Input.GetKeyDown(KeyCode.G))
                 {
+                    _audioManager.PlaySound(1);
                     Hover(false);
 
                     _currMenu = 0;
@@ -132,13 +143,13 @@ public class MainMenu : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
         {
+            _audioManager.PlaySound(2);
             _bar = Mathf.Max(_bar - 0.1f, 0f);
         }
         else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
         {
-
+            _audioManager.PlaySound(2);
             _bar = Mathf.Min(_bar + 0.1f, 1f);
-
 
         }
         _fill.fillAmount = _bar;
@@ -148,6 +159,8 @@ public class MainMenu : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.G))
         {
+            _audioManager.PlaySound(1);
+
             Hover(false);
 
             _currMenu = 0;

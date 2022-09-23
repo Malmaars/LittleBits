@@ -4,17 +4,21 @@ using UnityEngine;
 
 public class LadderBottom : MonoBehaviour
 {
-    private void OnTriggerEnter2D(Collider2D collision)
+    public bool onBottom;
+    private void OnTriggerStay2D(Collider2D collision)
     {
         if (collision.gameObject.GetComponent<Player>())
         {
-            Player player = collision.gameObject.GetComponent<Player>();
-            if (player.isClimbing && Input.GetAxis("Vertical") < 0)
-            {
-                player.canClimb = false;
-                player.isClimbing = false;
-                Debug.Log("Stop climbing");
-            }
+            onBottom = true;
+
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.GetComponent<Player>())
+        {
+             onBottom = false;    
         }
     }
 }

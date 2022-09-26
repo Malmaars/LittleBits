@@ -4,20 +4,57 @@ using UnityEngine;
 
 public class Interactable : MonoBehaviour
 {
-    public enum functions {talk, adjust, build};
+    public enum functions {talk, interact, activateObject};
 
-    public functions thisFunction;
+    public functions[] thisFunction;
+
+    public GameObject[] objectsToActive;
+    public GameObject[] objectsToDeActive;
+    int objectIndex;
+
+    public Conversation conversations;
+    public int currentConvo;
+
+    Dialogue dialogue;
+    GameObject buttonPrompt;
 
     bool keyPressed;
+
+    bool keyPressedA;
+
+    public float interactingTimer;
+    public int addThis;
+
+    Player player;
+
+    private void Start()
+    {
+        buttonPrompt = transform.GetChild(0).gameObject;
+        buttonPrompt.SetActive(false);
+        dialogue = FindObjectOfType<Dialogue>();
+        player = FindObjectOfType<Player>();
+    }
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.K)){
-            keyPressed = true;
+        if (!player.reading)
+        {
+            if (Input.GetKeyDown(KeyCode.K))
+            {
+                keyPressed = true;
+            }
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                keyPressedA = true;
+            }
         }
 
         if (Input.GetKeyUp(KeyCode.K))
         {
             keyPressed = false;
+        }
+        if (Input.GetKeyUp(KeyCode.J))
+        {
+            keyPressedA = false;
         }
     }
     private void OnTriggerStay2D(Collider2D collision)
@@ -28,36 +65,82 @@ public class Interactable : MonoBehaviour
             //if player presses the "A" or "B" button: perform function
             if (keyPressed)
             {
-                switch (thisFunction)
+                for (int i = 0; i < thisFunction.Length; i++)
                 {
-                    case functions.talk:
-                        Talk();
-                        break;
-                    case functions.adjust:
-                        Adjust();
-                        break;
-                    case functions.build:
-                        BuildMode();
-                        break;
-                }
+                    switch (thisFunction[i])
+                    {
+                        case functions.talk:
+                            Talk();
+                            break;
+                        case functions.interact:
+                            Interact();
+                            break;
+                    }
 
-                keyPressed = false;
+                    keyPressed = false;
+                }
+            }
+
+            if (keyPressedA)
+            {
+                for (int i = 0; i < thisFunction.Length; i++)
+                {
+                    switch (thisFunction[i])
+                    {
+                        case functions.talk:
+                            Talk();
+                            break;
+                    }
+                    keyPressedA = false;
+                }
             }
         }
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        buttonPrompt.SetActive(true);
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        buttonPrompt.SetActive(false);
+    }
+
     void Talk()
     {
-        Debug.Log("You can talk with me");
+        dialogue.InitiateNewConversation(conversations);
     }
 
-    void Adjust()
+    void Interact()
     {
-        Debug.Log("You can Adjust my settings");
+        player.interacting = true;
+        StartCoroutine(WaitWhileInteracting());
+        //timer
+        //player.interacting = false;
     }
 
-    void BuildMode()
+    void ActivateObject(GameObject objectToActivate)
     {
-        //activate build mode
+        objectIndex++;
+        //activate Object
+    }
+
+    private IEnumerator WaitWhileInteracting()
+    {
+        yield return new WaitForSeconds(interactingTimer);
+        player.interacting = false;
+
+        foreach(GameObject activate in objectsToActive)
+        {
+            activate.SetActive(true);
+        }
+
+        foreach (GameObject activate in objectsToDeActive)
+        {
+            activate.SetActive(false);
+        }
+
+        dialogue.DeathTimer(addThis);
     }
 }

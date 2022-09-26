@@ -10,13 +10,22 @@ public class uiFlicker : MonoBehaviour
     private GameObject[] _go;
     private int _idx = 0;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         if (_go.Length>0)
         {
             StartCoroutine(StartFlicker());
         }
     }
+
+    private void OnEnable()
+    {
+        if (_go.Length > 0)
+        {
+            StartCoroutine(StartFlicker());
+        }
+    }
+
 
     private IEnumerator StartFlicker() 
     {

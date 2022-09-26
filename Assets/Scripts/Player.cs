@@ -24,7 +24,15 @@ public class Player : MonoBehaviour
 
     Dialogue dialogue;
 
-    public PossibleLines[] testDialogue;
+    public PossibleLines[] startUpDialogue;
+    public Conversation startUpDialogue1;
+
+    public Animator playerAnimator;
+    public Transform playerAnimatorObject;
+
+    public bool interacting;
+    public bool reading;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -32,7 +40,8 @@ public class Player : MonoBehaviour
         playerCollider = GetComponent<Collider2D>();
         dialogue = FindObjectOfType<Dialogue>();
 
-        dialogue.InitiateNewConversation(testDialogue);
+        dialogue.InitiateNewConversation(startUpDialogue1);
+        reading = true;
     }
 
     private void OnDrawGizmos()
@@ -79,18 +88,11 @@ public class Player : MonoBehaviour
             touchesRight = false;
         }
 
-        if (Input.GetKeyDown(KeyCode.J) && isGrounded)
-        {
-            //jump
-            rb.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
-
-
-        }
-
-        if (Input.GetKeyDown(KeyCode.K))
+        if (Input.GetKeyDown(KeyCode.J))
         {
             dialogue.ContinueText();
         }
+        playerAnimator.SetBool("Interacting", interacting);
     }
 
     public void PhysicsUpdate()
@@ -98,46 +100,69 @@ public class Player : MonoBehaviour
         //transform.position = new Vector3(transform.position.x + Input.GetAxis("Horizontal") * moveSpeed * Time.deltaTime, transform.position.y);
         //rb.MovePosition(new Vector3(transform.position.x + Input.GetAxis("Horizontal") * moveSpeed * Time.deltaTime, transform.position.y));
         //rb.AddForce(new Vector2(transform.position.x + Input.GetAxis("Horizontal") * moveSpeed * Time.deltaTime, transform.position.y) - new Vector2(transform.position.x, transform.position.y), ForceMode2D.Impulse);
-
-        float horizontalMovement = Input.GetAxisRaw("Horizontal") * moveSpeed;
-
-
-        if ((touchesLeft && Input.GetAxisRaw("Horizontal") < 0) || (touchesRight && Input.GetAxisRaw("Horizontal") > 0))
+        if (!interacting && !reading)
         {
-            Debug.Log("TOUCHESSIDE");
-            horizontalMovement = 0;
-        }
+            float horizontalMovement = Input.GetAxisRaw("Horizontal") * moveSpeed;
 
-        rb.velocity = new Vector2(horizontalMovement, rb.velocity.y);
-
-        if (canClimb)
-        {
-            if (Input.GetAxis("Vertical") != 0)
+            if (Input.GetAxisRaw("Horizontal") == 0)
             {
-                isClimbing = true;
+                playerAnimator.SetBool("Running", false);
             }
-            //ya boy can climb, I just need a distinction between up and down
 
-        }
-        else
-        {
-            isClimbing = false;
-            playerCollider.isTrigger = false;
-            rb.gravityScale = 1;
-        }
-
-        if (isClimbing)
-        {
-            rb.gravityScale = 0;
-            playerCollider.isTrigger = true;
-            if (onBottom && Input.GetAxisRaw("Vertical") < 0)
+            if (Input.GetAxisRaw("Horizontal") > 0)
             {
-                rb.velocity = new Vector2(horizontalMovement, 0);
+                playerAnimator.SetBool("Running", true);
+                playerAnimator.SetBool("Left", false);
+                playerAnimatorObject.localScale = new Vector3(1, 1, 1);
+            }
+
+            if (Input.GetAxisRaw("Horizontal") < 0)
+            {
+                playerAnimator.SetBool("Running", true);
+                playerAnimator.SetBool("Left", true);
+                playerAnimatorObject.localScale = new Vector3(-1, 1, 1);
+            }
+
+            if ((touchesLeft && Input.GetAxisRaw("Horizontal") < 0) || (touchesRight && Input.GetAxisRaw("Horizontal") > 0))
+            {
+                Debug.Log("TOUCHESSIDE");
+                horizontalMovement = 0;
+            }
+
+
+            rb.velocity = new Vector2(horizontalMovement, rb.velocity.y);
+
+            if (canClimb)
+            {
+                if (Input.GetAxis("Vertical") != 0)
+                {
+                    isClimbing = true;
+                }
+                //ya boy can climb, I just need a distinction between up and down
+
             }
             else
             {
-                rb.velocity = new Vector2(horizontalMovement, Input.GetAxisRaw("Vertical") * climbSpeed);
+                isClimbing = false;
+                playerCollider.isTrigger = false;
+                rb.gravityScale = 1;
+            }
+
+            if (isClimbing)
+            {
+                rb.gravityScale = 0;
+                playerCollider.isTrigger = true;
+                if (onBottom && Input.GetAxisRaw("Vertical") < 0)
+                {
+                    rb.velocity = new Vector2(horizontalMovement, 0);
+                }
+                else
+                {
+                    rb.velocity = new Vector2(horizontalMovement, Input.GetAxisRaw("Vertical") * climbSpeed);
+                }
             }
         }
+
+        playerAnimator.SetBool("Climbing", isClimbing);
     }
 }

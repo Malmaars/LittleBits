@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 [Serializable]
 public struct PossibleLines
@@ -37,7 +38,9 @@ public class Dialogue : MonoBehaviour
 {
     public RawImage headShotSprite;
 
+    public AudioSource playingClip;
     public Texture[] availableHeadshots;
+    public AudioClip[] availableClips;
 
     public TextMeshProUGUI textToBeEdited;
 
@@ -109,6 +112,7 @@ public class Dialogue : MonoBehaviour
     {
         currentSentenceNumber = currentSentence.ToCharArray().Length - 1;
         textToBeEdited.text = currentSentence;
+        playingClip.Stop();
     }
 
     public void ContinueText()
@@ -117,7 +121,7 @@ public class Dialogue : MonoBehaviour
         {
             return;
         }
-        if(currentSentenceIndex >= currentConversation.Length - 1)
+        if(currentSentenceIndex >= currentConversation.Length - 1 && currentSentenceNumber >= currentSentence.ToCharArray().Length - 1)
         {
             EndConversation();
         }
@@ -149,6 +153,10 @@ public class Dialogue : MonoBehaviour
         {
             headShotSprite.texture = headShotImage;
         }
+
+        playingClip.Stop();
+        playingClip.clip = availableClips[headshotIndex];
+        playingClip.Play();
     }
 
     //Function to end the conversation, Returning the player to the usual gameplay
@@ -194,10 +202,13 @@ public class Dialogue : MonoBehaviour
         if (currentSentenceNumber > partOfTheSentence.Length)
         {
             currentSentenceNumber = 0;
+            playingClip.Stop();
+
         }
 
         if (currentSentenceNumber >= fullSentence.Length)
         {
+            playingClip.Stop();
             return false;
         }
 
@@ -210,6 +221,7 @@ public class Dialogue : MonoBehaviour
         if(deathTimer == 3)
         {
             //switch to cutscene scene
+            SceneManager.LoadScene(2);
         }
     }
 }

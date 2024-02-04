@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using Unity.VisualScripting;
+using UnityEngine.SceneManagement;
 //using static UnityEditor.Progress;
 
 public class MainMenu : MonoBehaviour
@@ -82,13 +83,14 @@ public class MainMenu : MonoBehaviour
     }
     void SelectingMainMenu()
     {
-        if (Input.GetKeyDown(KeyCode.G))
+        if (Input.GetKeyDown(KeyCode.J))
         {
             _audioManager.PlaySound(1);
 
             if (_currPointer == 0)
             {
                 //load new scene
+                SceneManager.LoadScene(1);
             }
             else
             {
@@ -116,7 +118,7 @@ public class MainMenu : MonoBehaviour
 
                 break;
             case 2:
-                if (Input.GetKeyDown(KeyCode.G))
+                if (Input.GetKeyDown(KeyCode.J))
                 {
                     _audioManager.PlaySound(1);
                     Hover(false);
@@ -157,7 +159,7 @@ public class MainMenu : MonoBehaviour
     }
     void SelectingCredit()
     {
-        if (Input.GetKeyDown(KeyCode.G))
+        if (Input.GetKeyDown(KeyCode.J))
         {
             _audioManager.PlaySound(1);
 

@@ -8,11 +8,13 @@ public class PlayerAudio : MonoBehaviour
     public AudioClip footstep1, footstep2;
     public void FootStepSoundOne()
     {
-        source.PlayOneShot(footstep1);
+        //Debug.LogError("Playing foot sound one");
+        source.PlayOneShot(footstep1, 1);
     }
 
     public void FootStepSoundTwo()
     {
-        source.PlayOneShot(footstep2);
+        //Debug.LogError("Playing foot sound two");
+        source.PlayOneShot(footstep2, 1);
     }
 }
